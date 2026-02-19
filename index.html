@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PPC Crusher</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Exo+2:wght@400;600;700;900&family=Share+Tech+Mono&display=swap');
+
+  :root {
+    --bg: #0a0800;
+    --surface: #13100a;
+    --surface2: #1a1508;
+    --border: #2e2510;
+    --accent: #ff9500;
+    --accent2: #ffcc00;
+    --green: #39ff14;
+    --red: #ff2020;
+    --blue: #00cfff;
+    --purple: #c44dff;
+    --text: #f0ddb0;
+    --text-dim: #6b5a30;
+    --crush: #ff4500;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Diagonal crack texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(
+        -55deg,
+        transparent,
+        transparent 60px,
+        rgba(255,149,0,0.015) 60px,
+        rgba(255,149,0,0.015) 61px
+      ),
+      repeating-linear-gradient(
+        35deg,
+        transparent,
+        transparent 80px,
+        rgba(255,149,0,0.01) 80px,
+        rgba(255,149,0,0.01) 81px
+      );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Vignette */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.7) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── HEADER ── */
+  #header {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 60px;
+    background: linear-gradient(180deg, rgba(255,149,0,0.12) 0%, transparent 100%);
+    border-bottom: 2px solid var(--border);
+    border-bottom-color: var(--accent);
+  }
+
+  .logo-group {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .logo-ppc {
+    font-family: 'Black Ops One', cursive;
+    font-size: 28px;
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(255,149,0,0.7), 2px 2px 0 #7a3800;
+    letter-spacing: 3px;
+  }
+
+  .logo-crusher {
+    font-family: 'Black Ops One', cursive;
+    font-size: 28px;
+    color: var(--accent2);
+    text-shadow: 0 0 20px rgba(255,204,0,0.7), 2px 2px 0 #7a5a00;
+    letter-spacing: 2px;
+  }
+
+  .logo-powered {
+    font-size: 9px;
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 2px;
+    margin-left: 4px;
+  }
+
+  /* HUD stats */
+  .hud {
+    display: flex;
+    gap: 6px;
+    align-items: stretch;
+  }
+
+  .hud-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 12px;
+    text-align: center;
+    min-width: 76px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hud-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0.4;
+  }
+
+  .hud-label {
+    font-size: 8px;
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 2px;
+  }
+
+  .hud-value {
+    font-family: 'Black Ops One', cursive;
+    font-size: 17px;
+    color: var(--accent);
+    line-height: 1.1;
+  }
+
+  .hud-value.green { color: var(--green); text-shadow: 0 0 8px rgba(57,255,20,0.5); }
+  .hud-value.red   { color: var(--red);   text-shadow: 0 0 8px rgba(255,32,32,0.5); }
+  .hud-value.yellow{ color: var(--accent2);}
+  .hud-value.blue  { color: var(--blue);  }
+
+  /* ACOS meter — hero element in HUD */
+  .acos-meter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 10px;
+    background: var(--surface);
+    border: 1px solid var(--crush);
+    border-radius: 4px;
+    box-shadow: 0 0 14px rgba(255,69,0,0.2);
+    min-width: 110px;
+  }
+
+  .acos-label {
+    font-size: 8px;
+    color: var(--crush);
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 3px;
+  }
+
+  .acos-bar-outer {
+    width: 100%;
+    height: 12px;
+    background: #1a0500;
+    border: 1px solid rgba(255,69,0,0.4);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .acos-bar-fill {
+    height: 100%;
+    transition: width 0.4s, background 0.4s;
+    border-radius: 2px;
+  }
+
+  .acos-bar-fill.low   { background: linear-gradient(90deg, var(--green), #80ff40); }
+  .acos-bar-fill.mid   { background: linear-gradient(90deg, var(--accent2), var(--accent)); }
+  .acos-bar-fill.high  { background: linear-gradient(90deg, var(--crush), var(--red)); animation: acos-pulse 0.6s infinite; }
+
+  @keyframes acos-pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+  .acos-val {
+    font-family: 'Black Ops One', cursive;
+    font-size: 15px;
+    color: var(--crush);
+  }
+
+  /* Budget bar */
+  .budget-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    min-width: 90px;
+  }
+
+  .budget-bar-outer {
+    width: 100%;
+    height: 10px;
+    background: #101008;
+    border: 1px solid rgba(255,149,0,0.3);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .budget-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s, background 0.3s;
+  }
+
+  /* ── GAME AREA ── */
+  #game-area {
+    flex: 1;
+    position: relative;
+    z-index: 5;
+    overflow: hidden;
+  }
+
+  /* Ground line */
+  #game-area::after {
+    content: 'DANGER ZONE';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 220px;
+    height: 36px;
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(255,32,32,0.08) 0px,
+      rgba(255,32,32,0.08) 20px,
+      transparent 20px,
+      transparent 40px
+    );
+    border-top: 2px dashed rgba(255,32,32,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    letter-spacing: 6px;
+    color: rgba(255,32,32,0.3);
+    font-family: 'Share Tech Mono', monospace;
+    z-index: 2;
+  }
+
+  /* ── KEYWORD CARDS ── */
+  .kw-card {
+    position: absolute;
+    width: 185px;
+    background: var(--surface);
+    border-radius: 6px;
+    padding: 10px 12px;
+    cursor: default;
+    animation: fallDown linear forwards;
+    z-index: 15;
+    transition: transform 0.1s;
+  }
+
+  .kw-card.winner {
+    border: 1px solid rgba(57,255,20,0.5);
+    box-shadow: 0 0 14px rgba(57,255,20,0.12), inset 0 1px 0 rgba(57,255,20,0.1);
+  }
+
+  .kw-card.loser {
+    border: 1px solid rgba(255,32,32,0.5);
+    box-shadow: 0 0 14px rgba(255,32,32,0.12), inset 0 1px 0 rgba(255,32,32,0.1);
+  }
+
+  .kw-card.mystery {
+    border: 1px solid rgba(0,207,255,0.4);
+    box-shadow: 0 0 14px rgba(0,207,255,0.1);
+  }
+
+  @keyframes fallDown {
+    from { transform: translateY(-220px) rotate(var(--tilt,0deg)); }
+    to   { transform: translateY(calc(100vh + 120px)) rotate(var(--tilt,0deg)); }
+  }
+
+  .kw-tag {
+    font-size: 8px;
+    letter-spacing: 2px;
+    font-family: 'Share Tech Mono', monospace;
+    margin-bottom: 5px;
+  }
+
+  .kw-tag.winner { color: var(--green); }
+  .kw-tag.loser  { color: var(--red); }
+  .kw-tag.mystery{ color: var(--blue); }
+
+  .kw-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.3px;
+  }
+
+  .kw-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .kw-stat {
+    text-align: center;
+    background: rgba(0,0,0,0.3);
+    border-radius: 3px;
+    padding: 3px 0;
+  }
+
+  .kw-stat-val {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .kw-stat-lbl {
+    font-size: 7px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+
+  .kw-actions {
+    display: flex;
+    gap: 4px;
+  }
+
+  .kw-btn {
+    flex: 1;
+    padding: 5px 0;
+    border: none;
+    border-radius: 3px;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.12s;
+    text-transform: uppercase;
+  }
+
+  .kw-btn:active { transform: scale(0.93); }
+
+  .btn-crush {
+    background: rgba(57,255,20,0.12);
+    border: 1px solid rgba(57,255,20,0.5);
+    color: var(--green);
+  }
+  .btn-crush:hover { background: rgba(57,255,20,0.25); box-shadow: 0 0 8px rgba(57,255,20,0.3); }
+
+  .btn-kill {
+    background: rgba(255,32,32,0.12);
+    border: 1px solid rgba(255,32,32,0.5);
+    color: var(--red);
+  }
+  .btn-kill:hover { background: rgba(255,32,32,0.25); box-shadow: 0 0 8px rgba(255,32,32,0.3); }
+
+  .btn-spy {
+    background: rgba(0,207,255,0.1);
+    border: 1px solid rgba(0,207,255,0.4);
+    color: var(--blue);
+    flex: 0.7;
+  }
+  .btn-spy:hover { background: rgba(0,207,255,0.2); }
+
+  /* ── SIDE PANEL ── */
+  #side-panel {
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 210px;
+    z-index: 20;
+    background: linear-gradient(180deg, rgba(19,16,10,0.98), rgba(10,8,0,0.99));
+    border-left: 2px solid var(--accent);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 14px 12px;
+    overflow: hidden;
+  }
+
+  .panel-section-title {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  /* Multiplier display */
+  .multi-display {
+    text-align: center;
+    padding: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  .multi-val {
+    font-family: 'Black Ops One', cursive;
+    font-size: 32px;
+    color: var(--accent2);
+    text-shadow: 0 0 20px rgba(255,204,0,0.5);
+    line-height: 1;
+  }
+
+  .multi-lbl {
+    font-size: 8px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .streak-pips {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    margin-top: 4px;
+  }
+
+  .streak-pip {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.2s;
+  }
+
+  .streak-pip.lit { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+
+  /* Power-up buttons */
+  .powerup-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 7px 8px;
+    cursor: pointer;
+    transition: all 0.18s;
+    width: 100%;
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    text-align: left;
+  }
+
+  .powerup-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(255,149,0,0.2);
+    background: rgba(255,149,0,0.06);
+  }
+
+  .powerup-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .powerup-btn.active {
+    border-color: var(--accent2);
+    box-shadow: 0 0 16px rgba(255,204,0,0.35);
+    animation: pop-glow 1.2s infinite;
+  }
+
+  @keyframes pop-glow {
+    0%,100% { box-shadow: 0 0 12px rgba(255,204,0,0.3); }
+    50%      { box-shadow: 0 0 24px rgba(255,204,0,0.6); }
+  }
+
+  .pu-icon { font-size: 18px; flex-shrink: 0; }
+
+  .pu-info { flex: 1; }
+
+  .pu-name {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: var(--text);
+  }
+
+  .pu-cost {
+    font-size: 9px;
+    color: var(--accent);
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  /* Live feed */
+  .live-feed {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .feed-entry {
+    font-size: 9px;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--text-dim);
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(46,37,16,0.4);
+    animation: slideIn 0.25s;
+    line-height: 1.4;
+  }
+
+  @keyframes slideIn { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; } }
+
+  .feed-entry.good { color: var(--green); }
+  .feed-entry.bad  { color: var(--red); }
+  .feed-entry.info { color: var(--accent); }
+
+  /* XP bar */
+  .xp-wrap { margin-top: auto; }
+
+  .xp-bar-outer {
+    height: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+
+  .xp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--purple), var(--accent));
+    transition: width 0.4s;
+    border-radius: 2px;
+  }
+
+  .xp-label-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 8px;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--text-dim);
+  }
+
+  /* ── FLOATING EFFECTS ── */
+  .float-text {
+    position: absolute;
+    font-family: 'Black Ops One', cursive;
+    font-size: 20px;
+    pointer-events: none;
+    z-index: 60;
+    animation: floatAway 1.1s ease forwards;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  }
+
+  @keyframes floatAway {
+    0%   { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-70px) scale(1.3); }
+  }
+
+  /* Crush explosion */
+  .crush-burst {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 55;
+    animation: burst 0.5s ease forwards;
+  }
+
+  @keyframes burst {
+    0%   { transform: scale(0); opacity: 0.9; }
+    50%  { transform: scale(2.5); opacity: 0.5; }
+    100% { transform: scale(4); opacity: 0; }
+  }
+
+  /* Big centre toast */
+  #big-toast {
+    position: absolute;
+    top: 50%;
+    left: calc(50% - 105px);
+    transform: translateY(-50%);
+    font-family: 'Black Ops One', cursive;
+    font-size: 46px;
+    pointer-events: none;
+    z-index: 70;
+    text-align: center;
+    display: none;
+    width: 210px;
+  }
+
+  #big-toast.show {
+    display: block;
+    animation: toastPop 1.6s forwards;
+  }
+
+  @keyframes toastPop {
+    0%   { opacity: 0; transform: translateY(-50%) scale(0.4); }
+    20%  { opacity: 1; transform: translateY(-50%) scale(1.15); }
+    80%  { opacity: 1; transform: translateY(-50%) scale(1); }
+    100% { opacity: 0; transform: translateY(-50%) scale(0.9); }
+  }
+
+  /* Wave banner */
+  #wave-banner {
+    position: absolute;
+    bottom: 44px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(19,16,10,0.85);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    z-index: 10;
+    white-space: nowrap;
+  }
+
+  /* Tutorial tip */
+  #tip-bar {
+    position: absolute;
+    bottom: 46px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,149,0,0.08);
+    border: 1px solid rgba(255,149,0,0.3);
+    border-radius: 8px;
+    padding: 6px 16px;
+    font-size: 11px;
+    color: var(--accent);
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 1px;
+    z-index: 11;
+    white-space: nowrap;
+    animation: tipBlink 2s infinite;
+  }
+
+  @keyframes tipBlink { 0%,100%{opacity:1} 50%{opacity:0.45} }
+
+  /* ── OVERLAYS ── */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10,8,0,0.93);
+    backdrop-filter: blur(10px);
+  }
+
+  .overlay-card {
+    background: var(--surface);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 36px 46px;
+    text-align: center;
+    max-width: 500px;
+    width: 92%;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 60px rgba(255,149,0,0.2), 0 0 120px rgba(255,149,0,0.08);
+  }
+
+  .overlay-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--crush), var(--accent), var(--accent2));
+  }
+
+  .ov-title {
+    font-family: 'Black Ops One', cursive;
+    font-size: 36px;
+    color: var(--accent);
+    text-shadow: 0 0 30px rgba(255,149,0,0.5), 3px 3px 0 #5a2e00;
+    margin-bottom: 4px;
+  }
+
+  .ov-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+  }
+
+  .ov-rules {
+    text-align: left;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .ov-rule {
+    font-size: 12px;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .ov-stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .ov-stat-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+  }
+
+  .ov-stat-val {
+    font-family: 'Black Ops One', cursive;
+    font-size: 24px;
+    color: var(--accent);
+  }
+
+  .ov-stat-lbl {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .cta-btn {
+    background: linear-gradient(135deg, var(--crush), var(--accent));
+    border: none;
+    color: #000;
+    font-family: 'Black Ops One', cursive;
+    font-size: 16px;
+    padding: 14px 40px;
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: 3px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(255,69,0,0.4);
+  }
+
+  .cta-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 32px rgba(255,149,0,0.6);
+  }
+
+  /* Auto-laser beam */
+  .laser-beam {
+    position: fixed;
+    width: 4px;
+    pointer-events: none;
+    z-index: 50;
+    animation: laserFire 0.35s ease forwards;
+    border-radius: 2px;
+  }
+
+  @keyframes laserFire {
+    0%  { opacity: 1; transform: scaleY(0) translateY(0); transform-origin: top; }
+    40% { opacity: 1; transform: scaleY(1); transform-origin: top; }
+    100%{ opacity: 0; transform: scaleY(1); }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <div class="logo-group">
+    <div>
+      <span class="logo-ppc">PPC</span>
+      <span class="logo-crusher"> CRUSHER</span>
+    </div>
+    <div class="logo-powered">⚛ POWERED BY ATOM11</div>
+  </div>
+
+  <div class="hud">
+    <div class="hud-box">
+      <div class="hud-label">SCORE</div>
+      <div class="hud-value" id="hud-score">0</div>
+    </div>
+    <div class="hud-box">
+      <div class="hud-label">AD SPEND</div>
+      <div class="hud-value yellow" id="hud-spend">$0</div>
+    </div>
+    <div class="hud-box">
+      <div class="hud-label">REVENUE</div>
+      <div class="hud-value green" id="hud-revenue">$0</div>
+    </div>
+    <div class="acos-meter">
+      <div class="acos-label">▲ ACOS — CRUSH IT</div>
+      <div class="acos-bar-outer">
+        <div class="acos-bar-fill low" id="acos-bar" style="width:30%"></div>
+      </div>
+      <div class="acos-val" id="acos-val">30%</div>
+    </div>
+    <div class="budget-wrap">
+      <div class="hud-label">BUDGET</div>
+      <div class="budget-bar-outer">
+        <div class="budget-bar-fill" id="budget-bar" style="width:100%; background: linear-gradient(90deg, var(--green), var(--accent));"></div>
+      </div>
+      <div class="hud-value" id="budget-val" style="font-size:13px; color:var(--accent2);">$1000</div>
+    </div>
+    <div class="hud-box">
+      <div class="hud-label">LEVEL</div>
+      <div class="hud-value blue" id="hud-level">1</div>
+    </div>
+  </div>
+</div>
+
+<!-- GAME AREA -->
+<div id="game-area">
+  <div id="big-toast"></div>
+  <div id="wave-banner">WAVE 1 — SPONSORED PRODUCTS</div>
+  <div id="tip-bar">💡 CRUSH good keywords · KILL bad ones · SPY on unknowns</div>
+</div>
+
+<!-- SIDE PANEL -->
+<div id="side-panel">
+
+  <!-- Multiplier -->
+  <div>
+    <div class="panel-section-title">COMBO MULTIPLIER</div>
+    <div class="multi-display">
+      <div class="multi-val" id="multi-val">×1.0</div>
+      <div class="multi-lbl">CURRENT BOOST</div>
+      <div class="streak-pips" id="streak-pips">
+        <div class="streak-pip"></div>
+        <div class="streak-pip"></div>
+        <div class="streak-pip"></div>
+        <div class="streak-pip"></div>
+        <div class="streak-pip"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Power-ups -->
+  <div>
+    <div class="panel-section-title">ATOM11 POWER-UPS</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <button class="powerup-btn" id="btn-ai" onclick="usePowerup('ai')">
+        <span class="pu-icon">🤖</span>
+        <div class="pu-info">
+          <div class="pu-name">AI Auto-Crush</div>
+          <div class="pu-cost" id="cost-ai">500 pts · 12s</div>
+        </div>
+      </button>
+      <button class="powerup-btn" id="btn-harvest" onclick="usePowerup('harvest')">
+        <span class="pu-icon">🌾</span>
+        <div class="pu-info">
+          <div class="pu-name">Keyword Harvest</div>
+          <div class="pu-cost" id="cost-harvest">300 pts · 10s</div>
+        </div>
+      </button>
+      <button class="powerup-btn" id="btn-negblock" onclick="usePowerup('negblock')">
+        <span class="pu-icon">🛡️</span>
+        <div class="pu-info">
+          <div class="pu-name">Negative Block</div>
+          <div class="pu-cost" id="cost-negblock">200 pts · 8s</div>
+        </div>
+      </button>
+      <button class="powerup-btn" id="btn-bid" onclick="usePowerup('bid')">
+        <span class="pu-icon">📈</span>
+        <div class="pu-info">
+          <div class="pu-name">Smart Bid Boost</div>
+          <div class="pu-cost" id="cost-bid">400 pts · 10s</div>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Feed -->
+  <div style="flex:1;overflow:hidden;">
+    <div class="panel-section-title">LIVE CAMPAIGN FEED</div>
+    <div class="live-feed" id="live-feed"></div>
+  </div>
+
+  <!-- XP -->
+  <div class="xp-wrap">
+    <div class="xp-bar-outer">
+      <div class="xp-bar-fill" id="xp-bar" style="width:0%"></div>
+    </div>
+    <div class="xp-label-row">
+      <span>LEVEL <span id="xp-level">1</span> XP</span>
+      <span id="xp-label">0 / 100</span>
+    </div>
+  </div>
+</div>
+
+<!-- START SCREEN -->
+<div class="overlay" id="start-screen">
+  <div class="overlay-card">
+    <div style="font-size:50px; margin-bottom:8px;">💥</div>
+    <div class="ov-title">PPC CRUSHER</div>
+    <div class="ov-sub">POWERED BY ATOM11 · SMASH YOUR ACOS INTO THE GROUND</div>
+    <div class="ov-rules">
+      <div class="ov-rule"><span style="color:var(--green)">⚡ CRUSH</span> — High-performing keyword. Raise the bid!</div>
+      <div class="ov-rule"><span style="color:var(--red)">💀 KILL</span> — Wasteful keyword. Pause it now!</div>
+      <div class="ov-rule"><span style="color:var(--blue)">🔍 SPY</span> — Unknown keyword. Investigate it.</div>
+      <div class="ov-rule"><span style="color:var(--accent2)">⚠️ DANGER</span> — Let a bad keyword pass → ACOS spikes!</div>
+    </div>
+    <button class="cta-btn" onclick="startGame()">CRUSH IT →</button>
+  </div>
+</div>
+
+<!-- GAME OVER SCREEN -->
+<div class="overlay" id="go-screen" style="display:none;">
+  <div class="overlay-card">
+    <div style="font-size:44px; margin-bottom:8px;" id="go-emoji">💀</div>
+    <div class="ov-title" id="go-title">ACOS CRUSHED YOU!</div>
+    <div class="ov-sub" id="go-sub">Your ACOS hit critical levels. Atom11 AI could have saved you!</div>
+    <div class="ov-stat-grid">
+      <div class="ov-stat-box">
+        <div class="ov-stat-val" id="go-score">0</div>
+        <div class="ov-stat-lbl">FINAL SCORE</div>
+      </div>
+      <div class="ov-stat-box">
+        <div class="ov-stat-val" id="go-level">1</div>
+        <div class="ov-stat-lbl">LEVEL REACHED</div>
+      </div>
+      <div class="ov-stat-box">
+        <div class="ov-stat-val" id="go-revenue">$0</div>
+        <div class="ov-stat-lbl">AD REVENUE</div>
+      </div>
+      <div class="ov-stat-box">
+        <div class="ov-stat-val" id="go-acos">0%</div>
+        <div class="ov-stat-lbl">FINAL ACOS</div>
+      </div>
+    </div>
+    <button class="cta-btn" onclick="restartGame()">CRUSH AGAIN →</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════
+//  STATE
+// ═══════════════════════════════
+let G = {
+  score: 0, spend: 0, revenue: 0,
+  budget: 1000, budgetMax: 1000,
+  acos: 30, roas: 3.3, ctr: 0.45,
+  level: 1, xp: 0, xpNeeded: 100,
+  wave: 1, streak: 0, multiplier: 1,
+  cards: [], cardId: 0,
+  running: false,
+  spawnMs: 2200, fallSecs: 10,
+  powerCooldowns: {},
+  aiActive: false, bidActive: false,
+};
+
+// ═══════════════════════════════
+//  KEYWORDS
+// ═══════════════════════════════
+const KW = {
+  winner: [
+    'wireless earbuds pro','yoga mat premium','protein powder vanilla','coffee grinder burr',
+    'air fryer 6qt xl','led desk lamp usb','silicone baking mat','fitness tracker band',
+    'bamboo cutting board','memory foam pillow','stainless water bottle','portable charger 20k',
+    'dog harness no-pull','vitamin d3 5000iu','reusable produce bags','blue light glasses',
+    'essential oil diffuser','resistance bands set','stand mixer 7qt','cast iron skillet 12"',
+  ],
+  loser: [
+    'cheap generic product','free returns scam','competitor brand xyz','wholesale bulk lot',
+    'review trade offer','irrelevant broad match','click farm traffic','invalid asin test',
+    'lorem ipsum keyword','$0.01 test bid','black hat ppc term','competitor coupon code',
+    'unrelated niche term','junk traffic source','spam broad keyword','return fraud query',
+  ],
+  mystery: [
+    'kitchen accessories 2024','home office essential','outdoor gear seasonal','gift idea unique',
+    'eco friendly option','premium quality set','new arrival trending','bundle deal special',
+    'limited edition item','seasonal sale pick','multi-purpose tool','best seller candidate',
+  ],
+};
+
+const pools = { winner: shuffle([...KW.winner]), loser: shuffle([...KW.loser]), mystery: shuffle([...KW.mystery]) };
+const idx   = { winner: 0, loser: 0, mystery: 0 };
+
+function shuffle(a) { return a.sort(() => Math.random() - 0.5); }
+function getKw(t) { return pools[t][idx[t]++ % pools[t].length]; }
+
+function pickType() {
+  const r = Math.random();
+  return r < 0.38 ? 'winner' : r < 0.70 ? 'loser' : 'mystery';
+}
+
+function metrics(t) {
+  if (t === 'winner') return { acos: rnd(5,18), ctr: rnd(0.4,1.2), cvr: rnd(8,18) };
+  if (t === 'loser')  return { acos: rnd(52,90), ctr: rnd(0.02,0.2), cvr: rnd(0.2,1.8) };
+  return                     { acos: rnd(22,45), ctr: rnd(0.18,0.45), cvr: rnd(2,7) };
+}
+
+function rnd(lo, hi) { return (Math.random() * (hi - lo) + lo).toFixed(1); }
+
+// ═══════════════════════════════
+//  SPAWN
+// ═══════════════════════════════
+let spawnTimer = null;
+
+function spawnCard() {
+  if (!G.running) return;
+  const type = pickType();
+  const kw   = getKw(type);
+  const m    = metrics(type);
+  const id   = G.cardId++;
+  const area = document.getElementById('game-area');
+  const maxX = area.offsetWidth - 225 - 200;
+  const x    = Math.random() * maxX + 10;
+  const tilt = (Math.random() - 0.5) * 4;
+
+  const card = document.createElement('div');
+  card.id = `c${id}`;
+  card.className = `kw-card ${type}`;
+  card.style.cssText = `left:${x}px; top:-220px; animation-duration:${G.fallSecs}s; --tilt:${tilt}deg;`;
+
+  const acosColor = type === 'winner' ? 'var(--green)' : type === 'loser' ? 'var(--red)' : 'var(--blue)';
+  const tagLabel  = type === 'winner' ? '● WINNER' : type === 'loser' ? '● LOSER' : '● UNKNOWN';
+
+  card.innerHTML = `
+    <div class="kw-tag ${type}">${tagLabel}</div>
+    <div class="kw-name">${kw}</div>
+    <div class="kw-stats">
+      <div class="kw-stat">
+        <div class="kw-stat-val" style="color:${acosColor}">${m.acos}%</div>
+        <div class="kw-stat-lbl">ACOS</div>
+      </div>
+      <div class="kw-stat">
+        <div class="kw-stat-val" style="color:var(--accent)">${m.ctr}%</div>
+        <div class="kw-stat-lbl">CTR</div>
+      </div>
+      <div class="kw-stat">
+        <div class="kw-stat-val" style="color:var(--accent2)">${m.cvr}%</div>
+        <div class="kw-stat-lbl">CVR</div>
+      </div>
+    </div>
+    <div class="kw-actions">
+      <button class="kw-btn btn-crush" onclick="act(${id},'crush','${type}',event)">⚡ CRUSH</button>
+      <button class="kw-btn btn-kill"  onclick="act(${id},'kill','${type}',event)">💀 KILL</button>
+      <button class="kw-btn btn-spy"   onclick="act(${id},'spy','${type}',event)">🔍</button>
+    </div>
+  `;
+
+  area.appendChild(card);
+  G.cards.push({ id, type, el: card });
+
+  const timeout = setTimeout(() => {
+    if (document.getElementById(`c${id}`)) {
+      removeCard(id);
+      onMiss(type, x, area.offsetHeight - 30);
+    }
+  }, G.fallSecs * 1000);
+  card._t = timeout;
+}
+
+function removeCard(id) {
+  const i = G.cards.findIndex(c => c.id === id);
+  if (i === -1) return;
+  clearTimeout(G.cards[i].el._t);
+  G.cards[i].el.remove();
+  G.cards.splice(i, 1);
+}
+
+// ═══════════════════════════════
+//  ACTIONS
+// ═══════════════════════════════
+function act(id, action, type, e) {
+  e.stopPropagation();
+  const obj = G.cards.find(c => c.id === id);
+  if (!obj) return;
+
+  const rect = obj.el.getBoundingClientRect();
+  const cx   = rect.left + rect.width / 2;
+  const cy   = rect.top  + rect.height / 2;
+
+  const correct =
+    (action === 'crush' && type === 'winner') ||
+    (action === 'kill'  && type === 'loser')  ||
+    (action === 'spy'   && type === 'mystery');
+
+  let pts = 0;
+  let msg = '';
+
+  if (correct) {
+    G.streak++;
+    const strk = G.streak;
+    if (strk % 5 === 0) {
+      G.multiplier = Math.min(G.multiplier + 0.5, 4);
+      bigToast(`×${G.multiplier} COMBO!`, 'var(--accent2)');
+    }
+
+    pts = Math.round((action === 'spy' ? 120 : 100) * G.multiplier);
+    G.score += pts;
+    G.xp    += 20;
+    G.acos   = Math.max(G.acos - 2, 5);
+
+    if (action === 'crush')  { G.revenue += +rnd(30,80); G.spend += +rnd(5,15); G.roas = Math.min(G.roas + 0.1, 10); }
+    if (action === 'kill')   { G.budget   = Math.min(G.budget + 15, G.budgetMax); G.acos = Math.max(G.acos - 1, 5); }
+    if (action === 'spy')    { G.ctr      = Math.min(G.ctr + 0.05, 3); G.revenue += +rnd(10,30); }
+
+    msg = action === 'crush' ? `⚡ Crushed "${obj.el.querySelector('.kw-name').textContent}" — +$${rnd(30,80)} rev`
+        : action === 'kill'  ? `💀 Killed waste keyword — budget saved!`
+        : `🔍 Spy intel gained — new targeting unlocked`;
+
+    burst(cx, cy, 'rgba(57,255,20,0.3)');
+    floatText(cx, cy, `+${pts}`, 'var(--green)');
+    addFeed(msg, 'good');
+  } else {
+    G.streak = 0; G.multiplier = 1;
+    pts = action === 'crush' ? -80 : action === 'kill' ? -60 : 25;
+    G.score = Math.max(0, G.score + pts);
+    G.xp   += 5;
+    G.acos  = Math.min(G.acos + (action === 'crush' ? 5 : 3), 99);
+    if (action === 'crush') { G.spend += +rnd(20,40); }
+    if (action === 'kill')  { G.revenue -= +rnd(10,25); }
+    msg = action === 'crush' ? `⚡ WRONG! Crushed a loser keyword — ACOS spike!`
+        : action === 'kill'  ? `💀 WRONG! Killed a winner — lost revenue!`
+        : `🔍 Spied a non-mystery keyword (+${pts} pts)`;
+    floatText(cx, cy, pts > 0 ? `+${pts}` : `${pts}`, 'var(--red)');
+    addFeed(msg, 'bad');
+  }
+
+  removeCard(id);
+  G.budget = Math.max(0, G.budget - (action === 'crush' ? 18 : 6));
+
+  checkLevelUp();
+  checkGameOver();
+  updateHUD();
+  updateStreakPips();
+}
+
+function onMiss(type, x, y) {
+  G.streak = 0; G.multiplier = 1;
+  if (type === 'winner') {
+    G.acos = Math.min(G.acos + 2, 99);
+    addFeed(`⚠️ Missed a winner keyword — opportunity lost!`, 'bad');
+    floatText(x, y, 'MISSED!', 'var(--red)');
+  } else if (type === 'loser') {
+    G.acos = Math.min(G.acos + 4, 99);
+    G.spend += +rnd(15, 35);
+    addFeed(`💸 Bad keyword slipped through — wasted spend!`, 'bad');
+    floatText(x, y, 'LEAKED!', 'var(--crush)');
+  }
+  updateStreakPips();
+  checkGameOver();
+  updateHUD();
+}
+
+// ═══════════════════════════════
+//  POWER-UPS
+// ═══════════════════════════════
+const PU_CFG = {
+  ai:       { cost: 500, dur: 12, label: 'AI Auto-Crush',   costId: 'cost-ai',       btnId: 'btn-ai' },
+  harvest:  { cost: 300, dur: 10, label: 'Keyword Harvest', costId: 'cost-harvest',  btnId: 'btn-harvest' },
+  negblock: { cost: 200, dur: 8,  label: 'Negative Block',  costId: 'cost-negblock', btnId: 'btn-negblock' },
+  bid:      { cost: 400, dur: 10, label: 'Smart Bid Boost', costId: 'cost-bid',      btnId: 'btn-bid' },
+};
+
+let aiInterval = null;
+
+function usePowerup(name) {
+  const cfg = PU_CFG[name];
+  if (!G.running) return;
+  if (G.score < cfg.cost) { addFeed(`❌ Need ${cfg.cost} pts for ${cfg.label}`, 'bad'); return; }
+  if (G.powerCooldowns[name]) return;
+
+  G.score -= cfg.cost;
+  G.powerCooldowns[name] = true;
+
+  const btn = document.getElementById(cfg.btnId);
+  btn.classList.add('active');
+  btn.disabled = true;
+
+  if (name === 'ai')       startAI();
+  if (name === 'harvest')  doHarvest();
+  if (name === 'negblock') doNegBlock();
+  if (name === 'bid')      doBidBoost();
+
+  addFeed(puMsg(name), 'info');
+
+  setTimeout(() => {
+    if (name === 'ai' && aiInterval) { clearInterval(aiInterval); aiInterval = null; G.aiActive = false; }
+    if (name === 'bid') { G.multiplier = Math.max(G.multiplier - 1, 1); G.bidActive = false; }
+    btn.classList.remove('active');
+
+    let cd = 25;
+    const t = setInterval(() => {
+      cd--;
+      if (cd <= 0) {
+        clearInterval(t);
+        G.powerCooldowns[name] = false;
+        btn.disabled = false;
+        document.getElementById(cfg.costId).textContent = `${cfg.cost} pts · ${cfg.dur}s`;
+      } else {
+        document.getElementById(cfg.costId).textContent = `COOLDOWN ${cd}s`;
+      }
+    }, 1000);
+  }, cfg.dur * 1000);
+
+  updateHUD();
+}
+
+function puMsg(n) {
+  return {
+    ai:       '🤖 AI Auto-Crush active! Atom11 is crushing keywords...',
+    harvest:  '🌾 Keyword Harvest running — mining new opportunities!',
+    negblock: '🛡️ Negative Block activated — blocking wasted spend!',
+    bid:      '📈 Smart Bid Boost ON — multiplier increased!',
+  }[n];
+}
+
+function startAI() {
+  G.aiActive = true;
+  aiInterval = setInterval(() => {
+    if (!G.aiActive || !G.running) { clearInterval(aiInterval); return; }
+    const targets = G.cards.slice(0, 4);
+    if (!targets.length) return;
+    const t = targets[Math.floor(Math.random() * targets.length)];
+    const rect = t.el.getBoundingClientRect();
+
+    // laser
+    const laser = document.createElement('div');
+    laser.className = 'laser-beam';
+    laser.style.cssText = `left:${rect.left + rect.width/2 - 2}px; top:${rect.top}px; height:${rect.height}px; background:linear-gradient(180deg, var(--purple), transparent);`;
+    document.body.appendChild(laser);
+    setTimeout(() => laser.remove(), 400);
+
+    setTimeout(() => {
+      if (!G.cards.find(c => c.id === t.id)) return;
+      const pts = Math.round(75 * G.multiplier);
+      G.score += pts;
+      G.xp    += 12;
+      if (t.type === 'loser')  { G.acos = Math.max(G.acos - 3, 5); G.budget = Math.min(G.budget + 12, G.budgetMax); }
+      if (t.type === 'winner') { G.revenue += +rnd(25,55); G.roas = Math.min(G.roas + 0.08, 10); G.acos = Math.max(G.acos - 1, 5); }
+      floatText(rect.left + rect.width/2, rect.top, `+${pts} AUTO`, 'var(--purple)');
+      addFeed(`🤖 Auto-crushed "${t.el.querySelector('.kw-name').textContent}"`, 'info');
+      removeCard(t.id);
+      checkLevelUp();
+      updateHUD();
+    }, 380);
+  }, 1600);
+}
+
+function doHarvest() {
+  G.revenue += +rnd(60, 120);
+  G.ctr = Math.min(G.ctr + 0.1, 3);
+  addFeed('🌾 +5 new profitable keywords discovered!', 'good');
+  updateHUD();
+}
+
+function doNegBlock() {
+  const bad = G.cards.filter(c => c.type === 'loser').slice(0, 4);
+  bad.forEach(c => {
+    const r = c.el.getBoundingClientRect();
+    burst(r.left + r.width/2, r.top + r.height/2, 'rgba(196,77,255,0.3)');
+    G.score += 50; G.acos = Math.max(G.acos - 2, 5); G.budget = Math.min(G.budget + 10, G.budgetMax);
+    addFeed(`🛡️ Blocked "${c.el.querySelector('.kw-name').textContent}"`, 'info');
+    removeCard(c.id);
+  });
+  updateHUD();
+}
+
+function doBidBoost() {
+  G.bidActive = true;
+  G.multiplier = Math.min(G.multiplier + 1, 4);
+  bigToast(`×${G.multiplier} BID BOOST!`, 'var(--accent2)');
+}
+
+// ═══════════════════════════════
+//  HUD
+// ═══════════════════════════════
+function updateHUD() {
+  document.getElementById('hud-score').textContent   = Math.floor(G.score).toLocaleString();
+  document.getElementById('hud-spend').textContent   = '$' + Math.floor(Math.max(0, G.spend));
+  document.getElementById('hud-revenue').textContent = '$' + Math.floor(Math.max(0, G.revenue));
+  document.getElementById('hud-level').textContent   = G.level;
+  document.getElementById('budget-val').textContent  = '$' + Math.floor(Math.max(0, G.budget));
+
+  // ACOS bar
+  const a = Math.max(0, Math.min(G.acos, 100));
+  const bar = document.getElementById('acos-bar');
+  bar.style.width = a + '%';
+  bar.className   = 'acos-bar-fill ' + (a < 35 ? 'low' : a < 60 ? 'mid' : 'high');
+  const acosEl = document.getElementById('acos-val');
+  acosEl.textContent = Math.round(a) + '%';
+  acosEl.style.color = a < 35 ? 'var(--green)' : a < 60 ? 'var(--accent2)' : 'var(--red)';
+
+  // Budget bar
+  const bp = Math.max(0, G.budget / G.budgetMax * 100);
+  const bb = document.getElementById('budget-bar');
+  bb.style.width = bp + '%';
+  bb.style.background = bp > 50 ? 'linear-gradient(90deg,var(--green),var(--accent))' :
+                        bp > 20 ? 'linear-gradient(90deg,var(--accent2),var(--accent))' :
+                                  'linear-gradient(90deg,var(--red),var(--crush))';
+
+  // Multiplier
+  document.getElementById('multi-val').textContent = '×' + G.multiplier.toFixed(1);
+
+  // XP
+  document.getElementById('xp-bar').style.width  = Math.min(G.xp / G.xpNeeded * 100, 100) + '%';
+  document.getElementById('xp-label').textContent = `${G.xp} / ${G.xpNeeded}`;
+  document.getElementById('xp-level').textContent = G.level;
+
+  // Wave label
+  const waves = ['SPONSORED PRODUCTS','SPONSORED BRANDS','SPONSORED DISPLAY','DSP CAMPAIGNS','BRAND DEFENSE'];
+  document.getElementById('wave-banner').textContent = `WAVE ${G.wave} — ${waves[Math.min(G.wave - 1, 4)]}`;
+}
+
+function updateStreakPips() {
+  const pips = document.querySelectorAll('.streak-pip');
+  const lit  = G.streak % 5;
+  pips.forEach((p, i) => p.classList.toggle('lit', i < lit));
+}
+
+// ═══════════════════════════════
+//  LEVEL / GAME OVER
+// ═══════════════════════════════
+function checkLevelUp() {
+  if (G.xp < G.xpNeeded) return;
+  G.xp      -= G.xpNeeded;
+  G.level++;
+  G.xpNeeded = Math.floor(G.xpNeeded * 1.3);
+  G.wave     = Math.min(G.level, 5);
+  G.fallSecs = Math.max(5, 10 - G.level * 0.7);
+  G.spawnMs  = Math.max(1000, 2200 - G.level * 140);
+  G.budget   = Math.min(G.budget + 150, G.budgetMax);
+  clearInterval(spawnTimer);
+  spawnTimer = setInterval(spawnCard, G.spawnMs);
+  bigToast(`LEVEL ${G.level}!`, 'var(--accent)');
+  addFeed(`🚀 Level ${G.level} unlocked — campaigns scaling up!`, 'info');
+}
+
+function checkGameOver() {
+  if (G.acos >= 80 || G.budget <= 0) endGame();
+}
+
+function endGame() {
+  G.running = false;
+  clearInterval(spawnTimer);
+  if (aiInterval) clearInterval(aiInterval);
+  G.cards.forEach(c => { clearTimeout(c.el._t); c.el.remove(); });
+  G.cards = [];
+
+  const reason = G.acos >= 80 ? 'ACOS CRUSHED YOU!' : 'OUT OF BUDGET!';
+  document.getElementById('go-title').textContent = reason;
+  document.getElementById('go-emoji').textContent = G.acos >= 80 ? '💀' : '💸';
+  document.getElementById('go-sub').textContent   = G.acos >= 80
+    ? `ACOS hit ${Math.round(G.acos)}%. Atom11's AI automation prevents exactly this.`
+    : `Budget depleted at level ${G.level}. Time for smarter bidding with Atom11!`;
+  document.getElementById('go-score').textContent   = Math.floor(G.score).toLocaleString();
+  document.getElementById('go-level').textContent   = G.level;
+  document.getElementById('go-revenue').textContent = '$' + Math.floor(Math.max(0, G.revenue));
+  document.getElementById('go-acos').textContent    = Math.round(G.acos) + '%';
+  document.getElementById('go-screen').style.display = 'flex';
+}
+
+// ═══════════════════════════════
+//  FX
+// ═══════════════════════════════
+function floatText(x, y, text, color) {
+  const el = document.createElement('div');
+  el.className = 'float-text';
+  el.textContent = text;
+  el.style.cssText = `left:${x}px; top:${y}px; color:${color};`;
+  document.getElementById('game-area').appendChild(el);
+  setTimeout(() => el.remove(), 1200);
+}
+
+function burst(x, y, color) {
+  const el = document.createElement('div');
+  el.className = 'crush-burst';
+  el.style.cssText = `left:${x - 30}px; top:${y - 30}px; background:${color};`;
+  document.getElementById('game-area').appendChild(el);
+  setTimeout(() => el.remove(), 600);
+}
+
+function bigToast(text, color) {
+  const el = document.getElementById('big-toast');
+  el.textContent = text;
+  el.style.color = color;
+  el.style.textShadow = `0 0 30px ${color}`;
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1700);
+}
+
+function addFeed(msg, cls) {
+  const feed = document.getElementById('live-feed');
+  const el = document.createElement('div');
+  el.className = `feed-entry ${cls}`;
+  el.textContent = msg;
+  feed.prepend(el);
+  if (feed.children.length > 14) feed.lastChild.remove();
+}
+
+// ═══════════════════════════════
+//  START / RESTART
+// ═══════════════════════════════
+function startGame() {
+  document.getElementById('start-screen').style.display = 'none';
+  setTimeout(() => {
+    const tip = document.getElementById('tip-bar');
+    if (tip) tip.style.display = 'none';
+  }, 7000);
+  G.running = true;
+  spawnCard();
+  spawnTimer = setInterval(spawnCard, G.spawnMs);
+  // background ambient drift
+  setInterval(() => {
+    if (!G.running) return;
+    G.acos  += (Math.random() - 0.47) * 0.6;
+    G.acos   = Math.max(5, Math.min(G.acos, 99));
+    G.budget = Math.max(0, G.budget - 2.5);
+    checkGameOver();
+    updateHUD();
+  }, 2000);
+  updateHUD();
+}
+
+function restartGame() {
+  G = {
+    score:0, spend:0, revenue:0, budget:1000, budgetMax:1000,
+    acos:30, roas:3.3, ctr:0.45, level:1, xp:0, xpNeeded:100,
+    wave:1, streak:0, multiplier:1, cards:[], cardId:0,
+    running:false, spawnMs:2200, fallSecs:10, powerCooldowns:{},
+    aiActive:false, bidActive:false,
+  };
+  if (aiInterval) clearInterval(aiInterval);
+  aiInterval = null;
+  document.getElementById('live-feed').innerHTML = '';
+  document.getElementById('go-screen').style.display = 'none';
+  Object.values(PU_CFG).forEach(cfg => {
+    const btn = document.getElementById(cfg.btnId);
+    btn.disabled = false;
+    btn.classList.remove('active');
+    document.getElementById(cfg.costId).textContent = `${cfg.cost} pts · ${cfg.dur}s`;
+  });
+  updateStreakPips();
+  startGame();
+}
+</script>
+</body>
+</html>
